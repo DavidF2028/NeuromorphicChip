@@ -1,17 +1,24 @@
 module Synapse #(
     parameter int numNeurons = 16,
     parameter int ID_WIDTH =
-        (numNeurons > 1) ? $clog2(numNeurons) : 1
+        (numNeurons > 1) ? $clog2(numNeurons) : 1,
+    parameter int CURRENT_WIDTH = 16,
+    parameter int WEIGHT_WIDTH = 16,
+    parameter int maxConnections = 4
 )(
-    input  logic spikeValid,
-    input  logic [ID_WIDTH-1:0] spikeNeuronID,
+    input logic clock,
+    input logic reset,
 
-    output logic signed [15:0] synapticCurrent
+    input logic [maxConnections-1:0] spikeValid,
+    input logic [ID_WIDTH-1:0] spikeNeuronID,
+    
+    output logic spikeReady,
+    output logic [ID_WIDTH-1:0] currentDestID,
+    output logic signed [CURRENT_WIDTH-1:0] currentWeight
 );
 
-    // For now, we will just generate a fixed synaptic current for each spike event.
-    // In a more complex implementation, this could be based on synaptic weights, delays, etc.
-
+    logic [ID_WIDTH-1:0] destMemory [0:numNeurons-1][0:maxConnections-1];
+    logic signed [WEIGHT_WIDTH-1:0] weightMemory [0:numNeurons-1][0:maxConnections-1];
 
     always_comb begin
         if (spikeValid) begin
